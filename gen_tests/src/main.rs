@@ -1,7 +1,8 @@
 #![feature(rustc_private)]
 
-extern crate rustc;
-use rustc::util::sha2::{Digest,Sha256};
+extern crate crypto;
+use crypto::sha2::Sha256;
+use crypto::digest::Digest;
 use std::u8;
 
 use self::Test::*;
@@ -19,16 +20,27 @@ fn main() {
 }
 
 fn gen(test: Test) {
-    let r2: Vec<u8> = {
+    let mut r2;
+    let mut x;
+    let mut h1;
+    let mut h2;
+    {
         let mut hash = Sha256::new();
-        hash.input("SCIPR".as_ref());
-        hash.result_bytes()
-    };
-    let x: Vec<u8> = {
+        
+        hash.input_str("SCIPR");
+        r2 = std::vec::from_elem(0u8, hash.output_bytes());
+        hash.result(r2.as_mut_slice());
+    }
+   
+    
+    {
         let mut hash = Sha256::new();
-        hash.input("LAB".as_ref());
-        hash.result_bytes()
-    };
+        hash.input_str("LAB");
+        x = std::vec::from_elem(0u8, hash.output_bytes());
+        hash.result(x.as_mut_slice());
+    }
+
+    
     let r1 = {
         let mut v = vec![];
         for (a, b) in r2.iter().zip(x.iter()) {
@@ -42,17 +54,19 @@ fn gen(test: Test) {
         v
     };
 
-    let h1: Vec<u8> = {
+    {
         let mut hash = Sha256::new();
         hash.input(&r1);
-        hash.result_bytes()
-    };
+        h1 = std::vec::from_elem(0u8, hash.output_bytes());
+        hash.result(h1.as_mut_slice());
+    }
 
-    let h2: Vec<u8> = {
+    {
         let mut hash = Sha256::new();
         hash.input(&r2);
-        hash.result_bytes()
-    };
+        h2 = std::vec::from_elem(0u8, hash.output_bytes());
+        hash.result(h2.as_mut_slice());
+    }
 
     print!("h1_bv = int_list_to_bits("); into_bin(&h1);
     print!("h2_bv = int_list_to_bits("); into_bin(&h2);
