@@ -40,7 +40,7 @@ boost::optional<r1cs_ppzksnark_proof<ppzksnark_ppT>> generate_proof(r1cs_ppzksna
     g.generate_r1cs_constraints();
     g.generate_r1cs_witness(h1, h2, x, r1, r2);
 
-    if (!pb.is_satisfied()) {
+    if (!pb.is_satisfied()) { //NOTE: If witness is not right, proof failed.
         return boost::none;
     }
 

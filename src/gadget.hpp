@@ -59,16 +59,28 @@ public:
 
     l_gadget(protoboard<FieldT> &pb) : gadget<FieldT>(pb, "l_gadget")
     {
-        // Allocate space for the verifier input.
+        /* 
+        (1) Public input first, split at set_input_sizes() position. 
+        HERE, the input should be field elements, the input_size_in_field_elements=4 here, and the public input size is 4
+        */
+        // Allocate space for the verifier input. 
         const size_t input_size_in_bits = sha256_digest_len * 3;
         {
             // We use a "multipacking" technique which allows us to constrain
             // the input bits in as few field elements as possible.
+            /*
+            FieldT::capacity()=numbits-1, for alt_bn128 curve, numbits=254.
+            long long div_ceil(long long x, long long y){
+                return (x + (y-1)) / y;
+            }
+            */
             const size_t input_size_in_field_elements = div_ceil(input_size_in_bits, FieldT::capacity());
             input_as_field_elements.allocate(pb, input_size_in_field_elements, "input_as_field_elements");
             this->pb.set_input_sizes(input_size_in_field_elements);
         }
 
+        // (2) Private inputs: r1_var, r2_var AND some other intermediate variables.
+        // Here annotation_prefix is "l_gadget"
         zero.allocate(this->pb, FMT(this->annotation_prefix, "zero"));
 
         // SHA256's length padding
@@ -92,6 +104,9 @@ public:
         assert(input_as_bits.size() == input_size_in_bits);
         unpack_inputs.reset(new multipacking_gadget<FieldT>(this->pb, input_as_bits, input_as_field_elements, FieldT::capacity(), FMT(this->annotation_prefix, " unpack_inputs")));
 
+        /* 
+        (2) Private inputs, following: r1_var, r2_var and some other intermediate vars.
+        */
         // Prover inputs:
         r1_var.reset(new digest_variable<FieldT>(pb, sha256_digest_len, "r1"));
         r2_var.reset(new digest_variable<FieldT>(pb, sha256_digest_len, "r2"));
@@ -139,7 +154,7 @@ public:
 
         for (unsigned int i = 0; i < sha256_digest_len; i++) {
             // This is the constraint that R1 = R2 ^ X.
-            // (2*b)*c = b+c - a
+            // (2*b)*c = b+c - a  FOR a=b^c  =>  a=b+c-2*b*c
             this->pb.add_r1cs_constraint(
                 r1cs_constraint<FieldT>(
                     { r2_var->bits[i] * 2 }, // 2*b

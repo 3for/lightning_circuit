@@ -16,8 +16,8 @@ int main()
 
     // Run test vectors.
     assert(run_test(keypair, false, false, false));
-    assert(!run_test(keypair, true, false, false));
-    assert(!run_test(keypair, false, true, false));
+    assert(!run_test(keypair, true, false, false)); //NOTE: If witness is not right, proof failed.
+    assert(!run_test(keypair, false, true, false)); //NOTE: If witness is not right, proof failed.
     assert(!run_test(keypair, false, false, true));
 }
 
@@ -68,15 +68,23 @@ bool run_test(r1cs_ppzksnark_keypair<default_r1cs_ppzksnark_pp>& keypair,
     cout << "Proof generated!" << endl;
 
     if (!proof) {
+        cout << "Proof generate failed!!!!" << endl;
         return false;
     } else {
         if (goofy_verification_inputs) {
             // [test] if we generated the proof but try to validate
             // with bogus inputs it shouldn't let us
-            return verify_proof(keypair.vk, *proof, h2_bv, h1_bv, x_bv);
+            bool isVerified = verify_proof(keypair.vk, *proof, h2_bv, h1_bv, x_bv);
+            if(isVerified) {
+                cout << "Verifed!!!" <<endl;
+            } else {
+                cout << "Verifed FAILED!!!" <<endl;
+            }
+            return isVerified;
         } else {
             // verification should not fail if the proof is generated!
             assert(verify_proof(keypair.vk, *proof, h1_bv, h2_bv, x_bv));
+            cout << "Verifed successfully!!!" <<endl;
             return true;
         }
     }
