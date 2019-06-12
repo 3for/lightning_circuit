@@ -7,6 +7,14 @@ This is a SNARK implementation using libsnark for the following:
 Read: given `H1`, `H2`, and `X`, prove you know `R1` and `R2` such that `R1` is the preimage of `H1`,
 `R2` is the preimage of `H2`, and `R1` is `R2 xor X`.
 
+## Notes
+
+```
+if (!pb.is_satisfied()) { //NOTE: If witness is not right, generate proof failed.
+        return boost::none;
+}
+```
+
 ## performance
 
 on my computer (Intel(R) Core(TM) i7-3770S CPU @ 3.10GHz):
