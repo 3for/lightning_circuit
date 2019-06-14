@@ -13,6 +13,12 @@ enum Test {
 }
 
 fn main() {
+    // rust implementation for https://blog.decentriq.ch/proving-hash-pre-image-zksnarks-zokrates/
+    let preimage = [00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,05];
+    let mut hasher = Sha256::new();
+    hasher.input(&preimage);
+    print!("512-bit `5` sha256:{}\n", hasher.result_str());
+
     println!("valid: ");
     gen(Valid);
     println!("using AND instead of XOR: ");
